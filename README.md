@@ -1,5 +1,3 @@
-Gotcha ✅ — here’s the README.md content as plain text only (no markdown formatting, no code fences), so you can just copy‑paste it into a .txt file if you like.
-
 📚 Campus Bazaar
 
 A full‑stack campus marketplace where university students can buy, sell, and share academic notes.
@@ -132,5 +130,6 @@ Commit changes: git commit -m "Added amazing feature"
 Push to branch & open a Pull Request
 
 📜 License
+
 
 MIT License © 2025 [RONIT]
