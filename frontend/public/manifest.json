@@ -1,0 +1,27 @@
+{
+  "short_name": "Campus Bazaar",
+  "name": "Campus Bazaar - Buy, Sell & Share University Notes",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48 64x64 128x128 256x256",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "description": "A campus marketplace where students can buy, sell, and share academic notes securely and easily."
+}
