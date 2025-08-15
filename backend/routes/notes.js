@@ -80,7 +80,7 @@ router.get('/sharing', authMiddleware, async (req, res) => {
     }
 
     const notes = await Note.find(query)
-      .populate('uploader', 'name university')
+  .populate('uploader', 'name university _id email')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -132,7 +132,7 @@ router.get('/selling', authMiddleware, async (req, res) => {
     }
 
     const notes = await Note.find(query)
-      .populate('uploader', 'name university')
+  .populate('uploader', 'name university _id email')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -188,6 +188,8 @@ router.post('/upload-sharing', authMiddleware, upload.single('file'), validateNo
     await user.save();
 
     await note.populate('uploader', 'name university');
+  await note.populate('uploader', 'name university _id email');
+  await note.populate('uploader', 'name university _id email');
 
     res.status(201).json({
       message: 'Note uploaded successfully!',
@@ -250,9 +252,12 @@ router.post('/upload-selling', authMiddleware, upload.single('file'), validateNo
 
     await note.populate('uploader', 'name university');
 
+    // Add isSelling: true for frontend compatibility
+    const noteObj = note.toObject();
+    noteObj.isSelling = true;
     res.status(201).json({
       message: 'Note uploaded for sale successfully!',
-      note
+      note: noteObj
     });
 
   } catch (error) {
@@ -540,7 +545,7 @@ router.post('/:id/review', authMiddleware, async (req, res) => {
 router.get('/user/uploaded', authMiddleware, async (req, res) => {
   try {
     const notes = await Note.find({ uploader: req.user.userId })
-      .populate('uploader', 'name university')
+  .populate('uploader', 'name university _id email')
       .sort({ createdAt: -1 });
 
     res.json({ notes });

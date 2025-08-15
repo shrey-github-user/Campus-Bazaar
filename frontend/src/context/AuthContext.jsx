@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../utils/api';
+import getErrorMessage from '../utils/getErrorMessage';
 
 const AuthContext = createContext();
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           const res = await api.get('/api/user/me');
           setUser(res.data.user);
-        } catch {
+        } catch (err) {
           localStorage.removeItem('token');
           delete api.defaults.headers.common['Authorization'];
           setUser(null);
@@ -25,6 +26,24 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     fetchUser();
+
+    // Auto logout only on tab/browser close (not refresh)
+    const handleLogoutOnClose = (e) => {
+      // If the page is being closed (not reloaded)
+      if (e.type === 'visibilitychange' && document.visibilityState === 'hidden') {
+        if (!navigator.sendBeacon) return; // fallback: do nothing if not supported
+        // Try to detect close (not reload)
+        if (performance.getEntriesByType('navigation')[0]?.type === 'navigate') {
+          localStorage.removeItem('token');
+          delete api.defaults.headers.common['Authorization'];
+          setUser(null);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleLogoutOnClose);
+    return () => {
+      document.removeEventListener('visibilitychange', handleLogoutOnClose);
+    };
   }, []);
 
   const login = async (email, password) => {
@@ -35,7 +54,7 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data.user);
       return { success: true };
     } catch (err) {
-      return { success: false, error: err.response?.data?.message };
+      return { success: false, error: getErrorMessage(err) };
     }
   };
 
@@ -44,7 +63,7 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/api/auth/signup', data);
       return { success: true, message: res.data.message };
     } catch (err) {
-      return { success: false, error: err.response?.data?.message };
+      return { success: false, error: getErrorMessage(err) };
     }
   };
 

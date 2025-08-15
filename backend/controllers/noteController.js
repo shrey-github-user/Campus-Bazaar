@@ -4,14 +4,20 @@ const Note = require('../models/Note'); // Adjust if model name/path differs
 // GET /api/notes
 const getNotes = async (req, res) => {
   try {
-    const { q } = req.query;
+    const { q, mode } = req.query;
     let query = {};
-
     if (q) {
-      query = { title: { $regex: q, $options: 'i' } }; // case-insensitive
+      query.title = { $regex: q, $options: 'i' };
     }
-
-    const notes = await Note.find(query).sort({ createdAt: -1 });
+    // mode: 'sharing' or 'selling'
+    if (mode === 'sharing') {
+      query.isForSale = false;
+    } else if (mode === 'selling') {
+      query.isForSale = true;
+    }
+    const notes = await Note.find(query)
+      .populate('uploader', 'name university _id email')
+      .sort({ createdAt: -1 });
     res.json({ notes });
   } catch (err) {
     console.error(err);

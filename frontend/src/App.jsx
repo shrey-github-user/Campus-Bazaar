@@ -4,10 +4,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 
 // Pages
-import Dashboard from './pages/Dashboard';
+import Home from './pages/Dashboard';
 import Profile from './pages/Profile';
 import PurchaseHistory from './pages/PurchaseHistory';
 import Chat from './pages/Chat';
+import Notes from './pages/Notes';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
@@ -23,8 +24,10 @@ export default function App() {
     <Router>
       <ErrorBoundary>
         <Routes>
-          {/* Login as homepage */}
+
+          {/* Login as homepage and /login */}
           <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -32,10 +35,18 @@ export default function App() {
 
           {/* Protected Dashboard after login */}
           <Route
+            path="/notes"
+            element={
+              <ProtectedRoute>
+                <Notes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Home />
               </ProtectedRoute>
             }
           />

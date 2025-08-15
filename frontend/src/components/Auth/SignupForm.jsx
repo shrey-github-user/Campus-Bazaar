@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -17,6 +18,7 @@ export default function SignupForm() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50); // animation
@@ -75,15 +77,26 @@ export default function SignupForm() {
         className="w-full p-2 mb-3 rounded border dark:bg-gray-700 dark:text-white"
         required
       />
-      <input
-        name="password"
-        value={form.password}
-        onChange={handleChange}
-        placeholder="Password"
-        type="password"
-        className="w-full p-2 mb-3 rounded border dark:bg-gray-700 dark:text-white"
-        required
-      />
+      <div className="relative mb-3">
+        <input
+          name="password"
+          value={form.password}
+          onChange={handleChange}
+          placeholder="Password"
+          type={showPassword ? 'text' : 'password'}
+          className="w-full p-2 rounded border dark:bg-gray-700 dark:text-white pr-10"
+          required
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+          onClick={() => setShowPassword((v) => !v)}
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
+        >
+          {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+        </button>
+      </div>
       <input
         name="university"
         value={form.university}

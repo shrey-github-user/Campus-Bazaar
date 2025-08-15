@@ -19,12 +19,12 @@ export default function Login() {
   }, [loading, user, navigate]);
 
   return (
-    <Layout>
-      <div
-        className={`flex justify-center items-center py-10 transition transform duration-300 ease-out
-          ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-      >
-        <LoginForm />
+    <Layout hideSidebar>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 dark:from-gray-900 dark:to-blue-950 py-8 px-2">
+        <div className="w-full max-w-md p-8 bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-2xl border border-blue-100 dark:border-gray-800">
+          <h1 className="text-3xl font-extrabold mb-6 text-center text-blue-700 dark:text-blue-300 tracking-tight">Login to Campus Bazaar</h1>
+          <LoginForm />
+        </div>
       </div>
     </Layout>
   );

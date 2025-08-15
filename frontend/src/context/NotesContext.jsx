@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
+import getErrorMessage from '../utils/getErrorMessage';
 
 const NotesContext = createContext();
 
@@ -13,8 +14,8 @@ export const NotesProvider = ({ children }) => {
     try {
       const res = await api.get('/api/notes');
       setNotes(res.data.notes || []);
-    } catch {
-      toast.error('Failed to load notes');
+    } catch (err) {
+      toast.error(getErrorMessage(err) || 'Failed to load notes');
     } finally {
       setLoading(false);
     }
@@ -25,8 +26,8 @@ export const NotesProvider = ({ children }) => {
       await api.delete(`/api/notes/${id}`);
       setNotes(prev => prev.filter(note => note._id !== id));
       toast.success('Note deleted');
-    } catch {
-      toast.error('Failed to delete note');
+    } catch (err) {
+      toast.error(getErrorMessage(err) || 'Failed to delete note');
     }
   };
 
@@ -34,8 +35,8 @@ export const NotesProvider = ({ children }) => {
     try {
       await api.post(`/api/notes/purchase/${id}`);
       toast.success('Note purchased successfully!');
-    } catch {
-      toast.error('Purchase failed');
+    } catch (err) {
+      toast.error(getErrorMessage(err) || 'Purchase failed');
     }
   };
 

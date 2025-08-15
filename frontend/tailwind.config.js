@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'] // Default font
+        sans: ['Source Code Pro', 'monospace'], // Global font
       },
       keyframes: {
         fadeIn: {

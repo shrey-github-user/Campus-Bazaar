@@ -12,7 +12,7 @@ export default function ForgotPassword() {
   }, []);
 
   return (
-    <Layout>
+    <Layout hideSidebar>
       <div
         className={`transition transform duration-300 ease-out ${
           visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'

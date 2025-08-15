@@ -1,3 +1,4 @@
+// (Removed misplaced app.use code. All middleware should be after app is initialized.)
 // backend/server.js
 const express = require('express');
 const mongoose = require('mongoose');
@@ -22,7 +23,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
@@ -30,7 +32,10 @@ const io = new Server(server, {
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -40,16 +45,6 @@ const limiter = rateLimit({
   max: 1000 // limit each IP to 1000 requests per windowMs
 });
 app.use(limiter);
-
-// CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
-
-// Body parsing middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static file serving
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -73,9 +68,15 @@ io.on('connection', (socket) => {
   console.log(`🔥 New user connected: ${socket.id}`);
 
   // Listen for messages
-  socket.on('sendMessage', (data) => {
-    // Send message to all connected users
-    io.emit('receiveMessage', data);
+  socket.on('sendMessage', async (data) => {
+    try {
+      // Fetch the fully populated message from the database
+      const ChatMessage = require('./models/ChatMessage');
+      const populatedMsg = await ChatMessage.findById(data._id).populate('sender', 'name university');
+      io.emit('receiveMessage', populatedMsg);
+    } catch (err) {
+      console.error('Socket emit error:', err);
+    }
   });
 
   socket.on('disconnect', () => {
@@ -103,7 +104,7 @@ app.use('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 

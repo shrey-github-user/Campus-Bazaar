@@ -21,7 +21,9 @@ router.post('/', authMiddleware, async (req, res) => {
     });
 
     await message.save();
-    return res.status(201).json({ message: 'Message saved', data: message });
+    // Populate sender info before returning
+    const populatedMsg = await ChatMessage.findById(message._id).populate('sender', 'name university');
+    return res.status(201).json({ message: 'Message saved', data: populatedMsg });
   } catch (err) {
     console.error('Error saving message:', err);
     return res.status(500).json({ message: 'Error saving message' });

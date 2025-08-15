@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { showSuccess, showError } from '../Common/Toast';
 import api from '../../utils/api';
+import getErrorMessage from '../../utils/getErrorMessage';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -18,7 +19,7 @@ export default function ForgotPasswordForm() {
       const res = await api.post('/api/auth/forgot-password', { email });
       showSuccess(res.data.message || 'Password reset link sent!');
     } catch (err) {
-      showError(err.response?.data?.message || 'Failed to send reset link');
+      showError(getErrorMessage(err) || 'Failed to send reset link');
     } finally {
       setSubmitting(false);
     }

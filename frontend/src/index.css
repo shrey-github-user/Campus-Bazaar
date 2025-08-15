@@ -1,7 +1,42 @@
 /* Tailwind CSS base layers */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom global styles for best UI/UX */
+body {
+  @apply bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen font-sans text-gray-900 antialiased;
+  transition: background 0.3s;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-bold text-gray-800;
+}
+
+a {
+  @apply text-blue-600 hover:text-blue-800 transition-colors underline-offset-2;
+}
+
+button, input, select, textarea {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-150;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #e0e7ef;
+}
+::-webkit-scrollbar-thumb {
+  background: #b6c6e3;
+  border-radius: 8px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
 
 /* Global font & theme transition */
 html {

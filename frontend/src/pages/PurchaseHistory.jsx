@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout/Layout';
 import api from '../utils/api';
 import { showError } from '../components/Common/Toast';
+import getErrorMessage from '../utils/getErrorMessage';
 import Loader from '../components/Common/Loader';
 import ErrorBoundary from '../components/Common/ErrorBoundary';
 import formatDate from '../utils/formatDate';
@@ -15,8 +16,8 @@ export default function PurchaseHistory() {
     try {
       const res = await api.get('/api/user/purchases');
       setPurchases(res.data.purchases || []);
-    } catch {
-      showError('Failed to load purchase history');
+    } catch (err) {
+      showError(getErrorMessage(err) || 'Failed to load purchase history');
     } finally {
       setLoading(false);
     }

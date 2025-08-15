@@ -1,106 +1,84 @@
-import React, { useEffect, useState } from 'react';
-import Layout from '../components/Layout/Layout';
-import NoteCard from '../components/Notes/NoteCard';
-import NoteModal from '../components/Notes/NoteModal';
-import UploadModal from '../components/Notes/UploadModal';
-import api from '../utils/api';
-import { showError, showSuccess } from '../components/Common/Toast';
-import Loader from '../components/Common/Loader';
-import ErrorBoundary from '../components/Common/ErrorBoundary';
-import useDebounce from '../hooks/useDebounce';
 
-export default function Dashboard() {
-  const [notes, setNotes] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Layout/Navbar';
 
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 500); // 500ms delay before API call
+const features = [
+  'Share your study notes with your campus community.',
+  'Sell your premium notes and earn money.',
+  'Discover, search, and purchase notes from others.',
+  'Secure, fast, and easy to use.',
+  'Join the Campus Bazaar revolution!'
+];
 
-  const fetchNotes = async (query = '') => {
-    setLoading(true);
-    try {
-      const res = await api.get('/api/notes', {
-        params: query ? { q: query } : {}
-      });
-      setNotes(res.data.notes || []);
-    } catch {
-      showError('Failed to load notes');
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function Home() {
+  const [displayed, setDisplayed] = useState('');
+  const [featureIdx, setFeatureIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+  const typingSpeed = 90;
+  const pause = 5000;
+  const intervalRef = useRef();
 
-  const handlePurchase = async (id) => {
-    try {
-      await api.post(`/api/notes/purchase/${id}`);
-      showSuccess('Note purchased successfully!');
-      fetchNotes(debouncedSearch);
-    } catch {
-      showError('Purchase failed');
-    }
-  };
-
-  // Initial load
   useEffect(() => {
-    fetchNotes();
-  }, []);
+    let timeout;
+    if (!deleting && charIdx < features[featureIdx].length) {
+      timeout = setTimeout(() => {
+        setDisplayed(features[featureIdx].slice(0, charIdx + 1));
+        setCharIdx(charIdx + 1);
+      }, typingSpeed);
+    } else if (!deleting && charIdx === features[featureIdx].length) {
+      timeout = setTimeout(() => {
+        setDeleting(true);
+      }, pause);
+    } else if (deleting && charIdx > 0) {
+      timeout = setTimeout(() => {
+        setDisplayed(features[featureIdx].slice(0, charIdx - 1));
+        setCharIdx(charIdx - 1);
+      }, 18);
+    } else if (deleting && charIdx === 0) {
+      timeout = setTimeout(() => {
+        setDeleting(false);
+        setFeatureIdx((featureIdx + 1) % features.length);
+      }, 300);
+    }
+    return () => clearTimeout(timeout);
+  }, [charIdx, deleting, featureIdx]);
 
-  // Run search when debounced value changes
   useEffect(() => {
-    fetchNotes(debouncedSearch);
-  }, [debouncedSearch]);
+    setCharIdx(0);
+    setDisplayed('');
+  }, [featureIdx]);
 
   return (
-    <Layout>
-      <ErrorBoundary>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-3">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Marketplace</h1>
-
-          {/* Search Input */}
-          <input
-            type="text"
-            placeholder="Search notes..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-1/3 px-3 py-2 rounded border border-gray-300 dark:border-gray-700
-                       bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
-          />
-
-          <button
-            onClick={() => setUploadOpen(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          >
-            Upload Note
-          </button>
-        </div>
-
-        {loading ? (
-          <Loader text="Loading notes..." />
-        ) : notes.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400">No notes found.</p>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-3">
-            {notes.map(note => (
-              <NoteCard key={note._id} note={note} onClick={() => setSelected(note)} />
-            ))}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex flex-col">
+      <Navbar />
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] w-full bg-gradient-to-br from-blue-50/80 via-white/80 to-blue-100/80 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 transition-colors duration-500">
+        <div className="max-w-2xl w-full mx-auto text-center py-20 px-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-blue-700 dark:text-blue-300 mb-6 drop-shadow-lg">Welcome to Campus Bazaar</h1>
+          <div className="h-12 flex items-center justify-center mb-10">
+            <span className="text-xl md:text-2xl font-mono text-gray-700 dark:text-gray-200 min-h-[3rem]">
+              {displayed}
+              <span className="animate-pulse">_</span>
+            </span>
           </div>
-        )}
-
-        <NoteModal
-          isOpen={!!selected}
-          onClose={() => setSelected(null)}
-          note={selected}
-          onPurchase={handlePurchase}
-        />
-
-        <UploadModal
-          isOpen={uploadOpen}
-          onClose={() => setUploadOpen(false)}
-          fetchNotes={() => fetchNotes(debouncedSearch)}
-        />
-      </ErrorBoundary>
-    </Layout>
+          <div className="flex flex-col md:flex-row gap-6 items-center justify-center mt-8">
+            <button
+              className="px-8 py-4 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold text-lg shadow-lg transition-all focus:ring-2 focus:ring-green-300"
+              onClick={() => navigate('/notes?mode=sharing')}
+            >
+              Share Notes
+            </button>
+            <button
+              className="px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-lg transition-all focus:ring-2 focus:ring-blue-300"
+              onClick={() => navigate('/notes?mode=selling')}
+            >
+              Sell Notes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
