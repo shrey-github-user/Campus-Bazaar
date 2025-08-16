@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function NoteCard({ note, onClick }) {
+export default function NoteCard({ note, onClick, user }) {
+  const isOwner = user && note.uploader && (user._id === note.uploader._id || user.email === note.uploader.email);
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -15,7 +16,7 @@ export default function NoteCard({ note, onClick }) {
         <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
           {note.description}
         </p>
-        {note.isSelling && (
+        {note.isSelling && !isOwner && (
           <p className="mt-2 text-blue-600 dark:text-blue-400 font-semibold">
             ₹{note.price}
           </p>

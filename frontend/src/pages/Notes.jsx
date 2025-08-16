@@ -12,10 +12,13 @@ import getErrorMessage from '../utils/getErrorMessage';
 import Loader from '../components/Common/Loader';
 import ErrorBoundary from '../components/Common/ErrorBoundary';
 import useDebounce from '../hooks/useDebounce';
+import SellingNoteCard from '../components/Notes/SellingNoteCard';
+import SellingNoteModal from '../components/Notes/SellingNoteModal';
 
 export default function Notes() {
   const [notes, setNotes] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [showPayment, setShowPayment] = useState(false);
   const [uploadSharingOpen, setUploadSharingOpen] = useState(false);
   const [uploadSellingOpen, setUploadSellingOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,6 +36,7 @@ export default function Notes() {
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 500);
+  const [purchasedNotes, setPurchasedNotes] = useState([]);
 
   // Keep mode in sync with query string
   useEffect(() => {
@@ -61,7 +65,10 @@ export default function Notes() {
     try {
       await api.post(`/api/notes/purchase/${id}`);
       showSuccess('Note purchased successfully!');
-      fetchNotes(debouncedSearch);
+      setNotes(prev => prev.filter(n => n._id !== id));
+      setPurchasedNotes(prev => [...prev, id]);
+      setSelected(null);
+      setShowPayment(false);
     } catch (err) {
       showError(getErrorMessage(err) || 'Purchase failed');
     }
@@ -140,29 +147,68 @@ export default function Notes() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {notes.map(note => (
-              <NoteCard key={note._id} note={note} onClick={() => setSelected(note)} user={user} />
-            ))}
+            {notes.map(note => {
+              if (mode === 'selling' && note.isSelling) {
+                const isOwner = user && note.uploader && (user._id === note.uploader._id || user.email === note.uploader.email);
+                const isPurchased = purchasedNotes.includes(note._id);
+                return (
+                  <SellingNoteCard
+                    key={note._id}
+                    note={note}
+                    user={user}
+                    onPurchase={() => {
+                      setSelected(note);
+                      setShowPayment(!isOwner);
+                    }}
+                    isPurchased={isPurchased}
+                  />
+                );
+              } else {
+                return (
+                  <NoteCard
+                    key={note._id}
+                    note={note}
+                    onClick={() => {
+                      setSelected(note);
+                      setShowPayment(false);
+                    }}
+                    user={user}
+                  />
+                );
+              }
+            })}
           </div>
         )}
 
-        <NoteModal
-          isOpen={!!selected}
-          onClose={() => setSelected(null)}
-          note={selected}
-          onPurchase={handlePurchase}
-          user={user}
-          onDelete={async (id) => {
-            try {
-              await api.delete(`/api/notes/${id}`);
-              showSuccess('Note deleted');
-              setSelected(null);
-              fetchNotes(debouncedSearch);
-            } catch (err) {
-              showError(getErrorMessage(err) || 'Delete failed');
-            }
-          }}
-        />
+        {mode === 'selling' ? (
+          <SellingNoteModal
+            isOpen={!!selected}
+            onClose={() => { setSelected(null); setShowPayment(false); }}
+            note={selected}
+            onPurchase={handlePurchase}
+            user={user}
+          />
+        ) : (
+          <NoteModal
+            isOpen={!!selected}
+            onClose={() => { setSelected(null); setShowPayment(false); }}
+            note={selected}
+            onPurchase={handlePurchase}
+            user={user}
+            onDelete={async (id) => {
+              try {
+                await api.delete(`/api/notes/${id}`);
+                showSuccess('Note deleted');
+                setSelected(null);
+                setShowPayment(false);
+                fetchNotes(debouncedSearch);
+              } catch (err) {
+                showError(getErrorMessage(err) || 'Delete failed');
+              }
+            }}
+            showPayment={showPayment}
+          />
+        )}
 
         <UploadSharingModal
           isOpen={uploadSharingOpen}

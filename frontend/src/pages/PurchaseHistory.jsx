@@ -6,6 +6,7 @@ import getErrorMessage from '../utils/getErrorMessage';
 import Loader from '../components/Common/Loader';
 import ErrorBoundary from '../components/Common/ErrorBoundary';
 import formatDate from '../utils/formatDate';
+import axios from 'axios';
 
 export default function PurchaseHistory() {
   const [purchases, setPurchases] = useState([]);
@@ -27,6 +28,27 @@ export default function PurchaseHistory() {
     fetchPurchases();
   }, []);
 
+  // Download handler for protected files
+  const handleDownload = async (noteId, fallbackFileName) => {
+    try {
+      // Step 1: Get authorized file URL from backend
+      const res = await api.post(`/api/notes/download/${noteId}`);
+      const { fileUrl, fileName } = res.data;
+      const url = fileUrl.startsWith('http') ? fileUrl : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${fileUrl}`;
+      // Step 2: Download the file as blob
+      const fileRes = await axios.get(url, { responseType: 'blob' });
+      const blob = new Blob([fileRes.data]);
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName || fallbackFileName || 'note.pdf';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      showError('Download failed.');
+    }
+  };
+
   return (
     <Layout>
       <ErrorBoundary>
@@ -43,14 +65,12 @@ export default function PurchaseHistory() {
                 <p className="text-gray-600 dark:text-gray-400">
                   ₹{p.note?.price} — {formatDate(p.date)}
                 </p>
-                <a
-                  href={p.note?.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => handleDownload(p.note?._id, p.note?.title || 'note.pdf')}
                   className="text-blue-600 hover:underline dark:text-blue-400"
                 >
                   Download
-                </a>
+                </button>
               </li>
             ))}
           </ul>

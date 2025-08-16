@@ -26,24 +26,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     fetchUser();
-
-    // Auto logout only on tab/browser close (not refresh)
-    const handleLogoutOnClose = (e) => {
-      // If the page is being closed (not reloaded)
-      if (e.type === 'visibilitychange' && document.visibilityState === 'hidden') {
-        if (!navigator.sendBeacon) return; // fallback: do nothing if not supported
-        // Try to detect close (not reload)
-        if (performance.getEntriesByType('navigation')[0]?.type === 'navigate') {
-          localStorage.removeItem('token');
-          delete api.defaults.headers.common['Authorization'];
-          setUser(null);
-        }
-      }
-    };
-    document.addEventListener('visibilitychange', handleLogoutOnClose);
-    return () => {
-      document.removeEventListener('visibilitychange', handleLogoutOnClose);
-    };
   }, []);
 
   const login = async (email, password) => {
